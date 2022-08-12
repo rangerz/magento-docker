@@ -27,4 +27,4 @@ dbin/cli php ./vendor/bin/ece-docker build:compose \
     --db=${MYSQL_VERSION} \
     --redis=${REDIS_VERSION} \
     ${SEARCH_ENGINE} \
-    --no-varnish "$@"
+    --no-varnish
