@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -e
+
+BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+source "${BIN_DIR}"/config
+
+DOMAIN=${1:-$DOMAIN}
+
+add-host()
+{
+    echo -e "\033[32m\033[1mAdding $DOMAIN to /etc/hosts\033[0m"
+    echo -e "Your system password may be required"
+
+    if grep -q "$DOMAIN" /etc/hosts; then
+        echo -e "\033[33m\033[1mThere is already an entry for $DOMAIN in /etc/hosts, skipping.\033[0m"
+
+        return
+    fi
+
+    echo "127.0.0.1 ::1 $DOMAIN" | sudo tee -a /etc/hosts
+}
+
+update-base-url()
+{
+    echo -e "Set https://${DOMAIN}/ to web/secure/base_url and web/secure/base_url"
+    dbin/magento config:set web/secure/base_url https://"$DOMAIN"/
+    dbin/magento config:set web/unsecure/base_url https://"$DOMAIN"/
+}
+
+cd "${ROOT_DIR}"
+
+echo "Generating docker-compose.yml..."
+dbin/build-compose $DOMAIN
+
+echo "Generating SSL certificate..."
+dbin/setup-ssl
+
+#update-base-url
+
+add-host

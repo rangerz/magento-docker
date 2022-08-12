@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -e
+
+BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+source "${BIN_DIR}"/config
+
+cd "${ROOT_DIR}"
+
+[ -z "$1" ] && echo "Please specify a directory or file to copy to container (ex. vendor, --all)" && exit
+
+if [ "$1" == "--all" ]; then
+    docker cp "./" "$(dbin/docker-compose ps -q fpm | awk '{print $1}')":/app/
+    echo "Completed copying all files from host to container"
+    dbin/fix-owns
+else
+    if [ -f "../$1" ]; then
+        docker cp "./${1}" "$(dbin/docker-compose ps -q fpm | awk '{print $1}')":/app/"$1"
+    else
+        docker cp "./${1}" "$(dbin/docker-compose ps -q fpm | awk '{print $1}')":/app/"$(dirname "$1")"
+    fi
+    echo "Completed copying $1 from host to container"
+    dbin/fix-owns "$1"
+fi

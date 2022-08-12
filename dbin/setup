@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -e
+
+BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+source "${BIN_DIR}"/config
+
+DOMAIN=${1:-$DOMAIN}
+MAGENTO_VERSION=${2:-$MAGENTO_VERSION}
+MAGENTO_EDITION=${3:-$MAGENTO_EDITION}
+
+cd "${ROOT_DIR}"
+
+dbin/install $MAGENTO_VERSION $MAGENTO_EDITION
+
+dbin/build-compose $DOMAIN
+
+#dbin/setup-domain $DOMAIN
+
+dbin/start
+
+dbin/apply-patches
+
+dbin/deploy
+
+dbin/post-deploy

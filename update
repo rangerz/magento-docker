@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e
+
+update-env()
+{
+    local TMP_DIR=tmp-repo
+
+    [ -e $TMP_DIR  ] && rm -rf $TMP_DIR
+    git clone --depth 1 git@github.com:rangerz/magento-docker.git $TMP_DIR
+    rsync -a $TMP_DIR/dbin/* dbin/
+    rsync -a $TMP_DIR/m2-hotfixes/* m2-hotfixes/
+    rsync -a $TMP_DIR/*.yml .
+    rm -rf $TMP_DIR
+
+    git init
+}
+
+update-env

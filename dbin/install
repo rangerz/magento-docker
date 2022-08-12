@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -e
+
+BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+source "${BIN_DIR}"/config
+
+MAGENTO_VERSION=${1:-$MAGENTO_VERSION}
+MAGENTO_EDITION=${2:-$MAGENTO_EDITION}
+
+install-magento-cloud()
+{
+    local MC_DIR=.magento-cloud
+
+    git clone --depth 1 --branch "${MAGENTO_VERSION}" https://github.com/magento/magento-cloud.git "${MC_DIR}"
+    cd "${MC_DIR}" &&
+        rm -rf .git .github update &&
+        rm -f composer.lock COPYING.txt LICENSE.txt README.md &&
+        cd -
+
+    rsync --ignore-existing -raz "${MC_DIR}"/ .
+    rm -rf "${MC_DIR}"
+
+    #sed -i -e 's/  magento-sync:/  mymagento-magento-sync:/g' docker-sync.yml
+}
+
+install-magento()
+{
+    local M2_SRC=.m2-src
+
+    [ -f composer.json ] && echo "composer.json exists, skipping install Magento $MAGENTO_EDITION" && return
+
+    if [ "CE" = "$MAGENTO_EDITION" ]; then
+        M2_MODULE=magento/project-community-edition=${MAGENTO_VERSION}
+    elif [ "EE" = "$MAGENTO_EDITION" ]; then
+        M2_MODULE=magento/project-enterprise-edition=${MAGENTO_VERSION}
+    fi
+    dbin/composer create-project --no-install --repository=https://repo.magento.com/ "${M2_MODULE}" "${M2_SRC}"
+    cp "${M2_SRC}"/composer.json .
+    rm -rf "${M2_SRC}"
+
+    dbin/composer config --json extra.magento-deploy-ignore '{"*": ["/.gitignore"]}'
+}
+
+install-ece-tools()
+{
+    dbin/composer require --no-update magento/ece-tools
+}
+
+cd "${ROOT_DIR}"
+
+if [ "ECE" = "$MAGENTO_EDITION" ]; then
+    install-magento-cloud
+else
+    install-magento
+    install-magento-cloud
+    install-ece-tools
+fi
+
+dbin/composer install
+git init

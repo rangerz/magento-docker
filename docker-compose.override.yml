@@ -1,0 +1,6 @@
+version: '2.1'
+
+services:
+  deploy:
+    volumes:
+      - '~/.composer/:/composer/:delegated'

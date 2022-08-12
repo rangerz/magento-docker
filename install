@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -e
+
+DOMAIN=${1:-magento2.docker}
+MAGENTO_VERSION=${2:-2.4.5}
+MAGENTO_EDITION=${3:-CE} # CE(community), EE(enterprise), ECE(cloud)
+
+curl -s https://raw.githubusercontent.com/rangerz/magento-docker/main/update | bash
+
+dbin/setup $DOMAIN $MAGENTO_VERSION $MAGENTO_EDITION

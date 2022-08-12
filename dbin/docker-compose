@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -e
+
+BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+source "${BIN_DIR}"/config
+
+# Support Compose V2
+if hash docker-compose 2>/dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    DOCKER_COMPOSE="docker compose"
+fi
+
+${DOCKER_COMPOSE} "$@"

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -e
+
+BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+source "${BIN_DIR}"/config
+
+cd "${ROOT_DIR}"
+
+if [ -f docker-compose.yml ]; then
+    dbin/docker-compose run --rm deploy "$@"
+else
+    docker run --rm -v "${ROOT_DIR}":/app/ -v ~/.composer/:/composer/ ${PHP_CLI_IMAGE} "$@"
+fi
+

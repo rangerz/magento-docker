@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -e
+
+update_dbin()
+{
+    local TMP_DIR=.tmpupdate
+    git clone
+}
+
+mkdir -p tmpupdate && cd "$_"
+

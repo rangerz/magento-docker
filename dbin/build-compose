@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+
+BIN_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+source "${BIN_DIR}"/config
+
+DOMAIN=${1:-$DOMAIN}
+
+cd "${ROOT_DIR}"
+
+[ ! -f vendor/bin/ece-docker ] && echo "Please run dbin/install first." && exit
+
+[ -f docker-compose.yml ] && dbin/stop
+
+if [ ${ES_VERSION} = false ]; then
+    SEARCH_ENGINE="--os=${OS_VERSION} --no-es"
+else
+    SEARCH_ENGINE="--es=${ES_VERSION} --no-os"
+fi
+
+dbin/cli php ./vendor/bin/ece-docker build:compose \
+    --host=${DOMAIN} \
+    --sync-engine=native \
+    --mode=developer \
+    --php=${PHP_VERSION} \
+    --db=${MYSQL_VERSION} \
+    --redis=${REDIS_VERSION} \
+    ${SEARCH_ENGINE} \
+    --no-varnish "$@"
